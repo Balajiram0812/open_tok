@@ -1,25 +1,36 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react';
+import OT from '@opentok/client';
 
-function App() {
+import "./style/video.css"
+import { API_KEY, SESSION_ID, TOKEN } from './config/config';
+import Publisher from './components/Publisher';
+import Subscriber from './components/Subscriber';
+
+const App = () => {
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    const otSession = OT.initSession(API_KEY, SESSION_ID);
+
+    otSession.connect(TOKEN, (err) => {
+      if (err) {
+        console.error('Connect error:', err.message);
+      } else {
+        setSession(otSession);
+      }
+    });
+
+    return () => {
+      otSession.disconnect();
+    };
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="video-container">
+      {session && <Publisher session={session} onSessionEnd={() => alert("Call ended")} />}
+      {session && <Subscriber session={session} />}
     </div>
   );
-}
+};
 
 export default App;
